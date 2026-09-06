@@ -1,13 +1,34 @@
 package poller
 
 import (
-	sender "senior_intern_bot/sender"
+	"fmt"
+	"log"
+	"net/http"
+	domain "senior_intern_bot/domain"
 )
 
-func Run(dispatcher chan sender.Message) {
-	go func() {
-		for {
+type Poller struct {
+	greenhouseCompanies []string
+}
 
+func GetGreenhouseURL(company string) string {
+	return fmt.Sprintf("https://boards-api.greenhouse.io/v1/boards/%s/jobs", company)
+}
+
+func New(greenhouseCompanies []string) (Poller, error) {
+	return Poller{
+		greenhouseCompanies: greenhouseCompanies,
+	}, nil
+}
+
+func (poller *Poller) Poll() ([]domain.Posting, error) {
+	// Poll greenhouse companies
+	for _, company := range poller.greenhouseCompanies {
+		resp, err := http.Get(GetGreenhouseURL(company))
+		if err != nil {
+			log.Println("error making get request: ", err)
 		}
-	}()
+
+	}
+
 }

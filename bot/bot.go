@@ -1,45 +1,47 @@
 package bot
 
 import (
-	"fmt"
 	"log"
-	"os"
-	"os/signal"
-	poller "senior_intern_bot/poller"
-	sender "senior_intern_bot/sender"
+	config "senior_intern_bot/config"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-var BotToken string
-var InternshipsChannelID string
+type SessionHandler struct {
+	session *discordgo.Session
+	config.Config
+}
 
-func Run() {
+func New(cfg config.Config) SessionHandler {
 	// Create a session
-	discordSession, err := discordgo.New("Bot " + BotToken)
+	discordSession, err := discordgo.New("Bot " + cfg.BotToken)
 	if err != nil {
 		log.Fatal("Error message: ", err)
 	}
-	// Open session
-	discordSession.Open()
-	defer discordSession.Close() // Close session, after function termination.
 
-	fmt.Println("Bot running...")
-	if _, err := discordSession.ChannelMessageSend(InternshipsChannelID, "Bot running..."); err != nil {
-		log.Println("Error sending startup message: ", err)
+	//	fmt.Println("Bot running...")
+	//if _, err := discordSession.ChannelMessageSend(cfg.InternshipChannelID, "Bot running..."); err != nil {
+	//log.Println("Error sending startup message: ", err)
+	//}
+	return SessionHandler{
+		session: discordSession,
+		Config:  cfg,
+	}
+}
+
+func (sh *SessionHandler) Open() {
+	if err := sh.session.Open(); err != nil {
+		log.Println("Error starting session: ", err)
+		return
 	}
 
-	// Start the db connection
+	if _, err := sh.session.ChannelMessageSend(sh.InternshipChannelID, "Bot running..."); err != nil {
+		log.Println("Error sending startup message: ", err)
+	}
+}
 
-	// Start the sender
-	dispatcher := sender.New(discordSession, InternshipsChannelID)
-	dispatcher.Run()
-
-	// Start the poller
-	poller.Run(dispatcher.Messages)
-
-	// Keep bot running until OS interruption (e.g ctrl + c)
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	<-c
+func (sh *SessionHandler) Close() {
+	if err := sh.session.Close(); err != nil {
+		log.Println("Error closing session: ", err)
+	}
 }
