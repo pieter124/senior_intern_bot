@@ -17,10 +17,7 @@ import (
 )
 
 func main() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	_ = godotenv.Load()
 
 	botToken := os.Getenv("DISCORD_BOT_TOKEN")
 	if botToken == "" {
@@ -42,7 +39,10 @@ func main() {
 	botSession.Open()
 	defer botSession.Close()
 
-	greenhouseCompanies := []string{"monzo"} // Look to populate
+	greenhouseCompanies := []string{"monzo", "anthropic", "stripe", "jetbrains", "cloudflare",
+		"mongodb", "canonical", "samsara", "celonis", "hellofresh", "doctolib",
+		"airbnb", "databricks", "squarespace",
+	}
 
 	pollerServ, err := poller.New(greenhouseCompanies)
 	if err != nil {

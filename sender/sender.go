@@ -20,7 +20,7 @@ func New(sessionHandler *bot.SessionHandler) (Sender, error) {
 func (sender *Sender) formatPostingsToMessages(postings []domain.Posting) ([]string, error) {
 	var formattedMessages []string
 	for _, p := range postings {
-		message := fmt.Sprintf("%s: %s", p.Title, p.URL)
+		message := fmt.Sprintf("%s | %s : %s", p.Title, p.Company, p.URL)
 		formattedMessages = append(formattedMessages, message)
 	}
 	return formattedMessages, nil
