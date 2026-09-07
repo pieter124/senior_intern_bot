@@ -12,6 +12,11 @@ type SessionHandler struct {
 	config.Config
 }
 
+func (sh *SessionHandler) SendToInternshipChannel(content string) error {
+	_, err := sh.session.ChannelMessageSend(sh.InternshipChannelID, content)
+	return err
+}
+
 func New(cfg config.Config) SessionHandler {
 	// Create a session
 	discordSession, err := discordgo.New("Bot " + cfg.BotToken)
