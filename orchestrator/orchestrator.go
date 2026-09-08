@@ -36,13 +36,13 @@ func (orchestrator *Orchestrator) MainLoop() {
 			return
 		case <-orchestrator.ticker.C:
 			// Poll
-			polledData, err := orchestrator.poller.Poll()
+			polledPostings, err := orchestrator.poller.Poll()
 			if err != nil {
 				log.Println("error polling: ", err)
 			}
 
 			// Filter
-			filteredPostingsByVerdict, err := orchestrator.filter.Filter(polledData)
+			filteredPostingsByVerdict, err := orchestrator.filter.Filter(polledPostings)
 			if err != nil {
 				log.Println("error filtering: ", err)
 			}

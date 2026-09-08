@@ -5,6 +5,7 @@ import (
 	"fmt"
 	bot "senior_intern_bot/bot"
 	domain "senior_intern_bot/domain"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -45,7 +46,7 @@ func formatPosting(posting domain.Posting) string {
 	if utf8.RuneCountInString(title) > maxTitleRunes {
 		title = string([]rune(title)[:maxTitleRunes]) + "..."
 	}
-	return fmt.Sprintf("%s | %s : %s", title, posting.Company, posting.URL)
+	return fmt.Sprintf("%s | **%s** : %s", title, strings.ToTitle(posting.Company), posting.URL)
 }
 
 // discordBatchify packs postings into batches without exceeding the Discord character limit.

@@ -54,21 +54,14 @@ func main() {
 	}
 	defer botSession.Close()
 
-	greenhouseCompanies := []string{"monzo"}
-	/*
-		"anthropic", "stripe", "jetbrains", "cloudflare",
-			"mongodb", "canonical", "samsara", "celonis", "hellofresh", "doctolib",
-			"airbnb", "databricks", "squarespace"
-	*/
-
 	// Start up pipeline services.
-	pollerServ := poller.New(greenhouseCompanies)
+	pollerServ := poller.New()
 	filterServ := filter.New()
 	senderServ := sender.New(botSession)
 	storerServ := storer.New()
 
 	// Start ticker (determines how often we poll)
-	ticker := time.NewTicker(20 * time.Minute)
+	ticker := time.NewTicker(1 * time.Minute)
 
 	orchestratorServ, err := orchestrator.New(
 		pollerServ,

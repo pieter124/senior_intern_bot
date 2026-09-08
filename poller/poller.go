@@ -23,9 +23,9 @@ func getGreenhouseURL(company string) string {
 	return fmt.Sprintf("https://boards-api.greenhouse.io/v1/boards/%s/jobs?content=true", company)
 }
 
-func New(greenhouseCompanies []string) *GreenhousePoller {
+func New() *GreenhousePoller {
 	return &GreenhousePoller{
-		greenhouseCompanies: greenhouseCompanies,
+		greenhouseCompanies: GreenhouseCompanies,
 		client:              &http.Client{Timeout: 10 * time.Second},
 	}
 }
