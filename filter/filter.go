@@ -4,15 +4,19 @@ import (
 	domain "senior_intern_bot/domain"
 )
 
-type Filter struct {
+type Filterer interface {
+	Filter([]domain.Posting) ([]domain.Posting, error)
 }
 
-func New() (Filter, error) {
-	return Filter{}, nil
+type KeywordFilter struct {
+}
+
+func New() *KeywordFilter {
+	return &KeywordFilter{}
 }
 
 // TODO
-func (filter *Filter) Filter(data []domain.Posting) ([]domain.Posting, error) {
+func (filter *KeywordFilter) Filter(data []domain.Posting) ([]domain.Posting, error) {
 
 	return data, nil
 }

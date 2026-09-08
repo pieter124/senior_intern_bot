@@ -27,12 +27,14 @@ type Location struct {
 	Name string `json:"name"`
 }
 type Posting struct {
-	Title    string   `json:"title"`
-	JobID    int      `json:"id"`
-	Location Location `json:"location"`
-	PostedAt string   `json:"first_published"`
-	URL      string   `json:"absolute_url"`
-	Company  string   `json:"-"` // Set during polling.
-	RawJSON  string   `json:"-"` // Set during polling.
-	Verdict  Verdict  `json:"-"` // Set during filtering.
+	Title       string   `json:"title"`
+	JobID       int      `json:"id"`
+	Location    Location `json:"location"`
+	PostedAt    string   `json:"first_published"`
+	URL         string   `json:"absolute_url"`
+	Content     string   `json:"content"`
+	Company     string   `json:"-"` // Set during polling.
+	RawJSON     string   `json:"-"` // Set during polling.
+	ContentHash string   `json:"-"` // Set during filtering.
+	Verdict     Verdict  `json:"-"` // Set during filtering.
 }

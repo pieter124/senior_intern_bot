@@ -10,23 +10,27 @@ import (
 	"time"
 )
 
-type Poller struct {
+type Poller interface {
+	Poll() ([]domain.Posting, error)
+}
+
+type GreenhousePoller struct {
 	greenhouseCompanies []string
 	client              *http.Client
 }
 
-func GetGreenhouseURL(company string) string {
+func getGreenhouseURL(company string) string {
 	return fmt.Sprintf("https://boards-api.greenhouse.io/v1/boards/%s/jobs?content=true", company)
 }
 
-func New(greenhouseCompanies []string) (Poller, error) {
-	return Poller{
+func New(greenhouseCompanies []string) *GreenhousePoller {
+	return &GreenhousePoller{
 		greenhouseCompanies: greenhouseCompanies,
 		client:              &http.Client{Timeout: 10 * time.Second},
-	}, nil
+	}
 }
 
-func (poller *Poller) Poll() ([]domain.Posting, error) {
+func (poller *GreenhousePoller) Poll() ([]domain.Posting, error) {
 	var (
 		polled []domain.Posting
 		errs   []error
@@ -44,8 +48,8 @@ func (poller *Poller) Poll() ([]domain.Posting, error) {
 	return polled, errors.Join(errs...)
 }
 
-func (poller *Poller) pollGreenhouse(company string) ([]domain.Posting, error) {
-	resp, err := poller.client.Get(GetGreenhouseURL(company))
+func (poller *GreenhousePoller) pollGreenhouse(company string) ([]domain.Posting, error) {
+	resp, err := poller.client.Get(getGreenhouseURL(company))
 	if err != nil {
 		return nil, fmt.Errorf("error making get request: %w", err)
 	}

@@ -11,14 +11,14 @@ import (
 
 type Orchestrator struct {
 	poller        poller.Poller
-	filter        filter.Filter
+	filter        filter.Filterer
 	sender        sender.Sender
 	storer        storer.Storer
 	ticker        *time.Ticker
 	isDoneChannel chan bool
 }
 
-func New(poller poller.Poller, filter filter.Filter, sender sender.Sender, storer storer.Storer, ticker *time.Ticker) (Orchestrator, error) {
+func New(poller poller.Poller, filter filter.Filterer, sender sender.Sender, storer storer.Storer, ticker *time.Ticker) (Orchestrator, error) {
 	return Orchestrator{
 		poller:        poller,
 		filter:        filter,

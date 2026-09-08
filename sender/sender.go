@@ -7,17 +7,21 @@ import (
 	domain "senior_intern_bot/domain"
 )
 
-type Sender struct {
+type Sender interface {
+	Send([]domain.Posting) error
+}
+
+type DiscordSender struct {
 	sessionHandler *bot.SessionHandler
 }
 
-func New(sessionHandler *bot.SessionHandler) (Sender, error) {
-	return Sender{
+func New(sessionHandler *bot.SessionHandler) *DiscordSender {
+	return &DiscordSender{
 		sessionHandler: sessionHandler,
-	}, nil
+	}
 }
 
-func (sender *Sender) formatPostingsToMessages(postings []domain.Posting) ([]string, error) {
+func (sender *DiscordSender) formatPostingsToMessages(postings []domain.Posting) ([]string, error) {
 	var formattedMessages []string
 	for _, p := range postings {
 		message := fmt.Sprintf("%s | %s : %s", p.Title, p.Company, p.URL)
@@ -26,7 +30,7 @@ func (sender *Sender) formatPostingsToMessages(postings []domain.Posting) ([]str
 	return formattedMessages, nil
 }
 
-func (sender *Sender) Send(postings []domain.Posting) error {
+func (sender *DiscordSender) Send(postings []domain.Posting) error {
 	formattedMessages, err := sender.formatPostingsToMessages(postings)
 	if err != nil {
 		return fmt.Errorf("error formatting postings to messages: %s", err)

@@ -44,25 +44,11 @@ func main() {
 		"airbnb", "databricks", "squarespace",
 	}
 
-	pollerServ, err := poller.New(greenhouseCompanies)
-	if err != nil {
-		log.Println("error creating poller: ", err)
-	}
-
-	filterServ, err := filter.New()
-	if err != nil {
-		log.Println("error creating filter: ", err)
-	}
-
-	senderServ, err := sender.New(&botSession)
-	if err != nil {
-		log.Println("error creating sender: ", err)
-	}
-
-	storerServ, err := storer.New()
-	if err != nil {
-		log.Println("error creating storer: ", err)
-	}
+	// Start up pipeline services.
+	pollerServ := poller.New(greenhouseCompanies)
+	filterServ := filter.New()
+	senderServ := sender.New(&botSession)
+	storerServ := storer.New()
 
 	// Start ticker (determines how often we poll)
 	ticker := time.NewTicker(1 * time.Minute)
