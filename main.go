@@ -29,9 +29,15 @@ func main() {
 		log.Fatal("DISCORD_CHANNEL_INTERNSHIPS environment variable is not set")
 	}
 
+	unsortedChannelID := os.Getenv("DISCORD_CHANNEL_UNSORTED")
+	if unsortedChannelID == "" {
+		log.Fatal("DISCORD_CHANNEL_UNSORTED environment variable is not set")
+	}
+
 	cfg := config.Config{
 		BotToken:            botToken,
 		InternshipChannelID: internshipChannelID,
+		UnsortedChannelID:   unsortedChannelID,
 	}
 
 	// Start bot session
@@ -48,10 +54,12 @@ func main() {
 	}
 	defer botSession.Close()
 
-	greenhouseCompanies := []string{"monzo", "anthropic", "stripe", "jetbrains", "cloudflare",
-		"mongodb", "canonical", "samsara", "celonis", "hellofresh", "doctolib",
-		"airbnb", "databricks", "squarespace",
-	}
+	greenhouseCompanies := []string{"monzo"}
+	/*
+		"anthropic", "stripe", "jetbrains", "cloudflare",
+			"mongodb", "canonical", "samsara", "celonis", "hellofresh", "doctolib",
+			"airbnb", "databricks", "squarespace"
+	*/
 
 	// Start up pipeline services.
 	pollerServ := poller.New(greenhouseCompanies)
