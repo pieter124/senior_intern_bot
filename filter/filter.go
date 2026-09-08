@@ -13,5 +13,6 @@ func New() (Filter, error) {
 
 // TODO
 func (filter *Filter) Filter(data []domain.Posting) ([]domain.Posting, error) {
+
 	return data, nil
 }

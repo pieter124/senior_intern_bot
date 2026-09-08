@@ -21,7 +21,7 @@ func New(cfg config.Config) SessionHandler {
 	// Create a session
 	discordSession, err := discordgo.New("Bot " + cfg.BotToken)
 	if err != nil {
-		log.Fatal("Error message: ", err)
+		log.Println("Error message: ", err)
 	}
 
 	//	fmt.Println("Bot running...")
@@ -34,19 +34,23 @@ func New(cfg config.Config) SessionHandler {
 	}
 }
 
-func (sh *SessionHandler) Open() {
+func (sh *SessionHandler) Open() error {
 	if err := sh.session.Open(); err != nil {
 		log.Println("Error starting session: ", err)
-		return
+		return err
 	}
 
 	if _, err := sh.session.ChannelMessageSend(sh.InternshipChannelID, "Bot running..."); err != nil {
 		log.Println("Error sending startup message: ", err)
+		return err
 	}
+	return nil
 }
 
-func (sh *SessionHandler) Close() {
+func (sh *SessionHandler) Close() error {
 	if err := sh.session.Close(); err != nil {
 		log.Println("Error closing session: ", err)
+		return err
 	}
+	return nil
 }

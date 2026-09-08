@@ -16,7 +16,7 @@ type Poller struct {
 }
 
 func GetGreenhouseURL(company string) string {
-	return fmt.Sprintf("https://boards-api.greenhouse.io/v1/boards/%s/jobs", company)
+	return fmt.Sprintf("https://boards-api.greenhouse.io/v1/boards/%s/jobs?content=true", company)
 }
 
 func New(greenhouseCompanies []string) (Poller, error) {
@@ -69,6 +69,7 @@ func (poller *Poller) pollGreenhouse(company string) ([]domain.Posting, error) {
 			log.Println("error unmarshalling json into posting ", err)
 			continue
 		}
+		p.Company = company
 		p.RawJSON = string(raw)
 		postings = append(postings, p)
 	}

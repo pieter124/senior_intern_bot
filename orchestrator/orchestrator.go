@@ -39,7 +39,6 @@ func (orchestrator *Orchestrator) MainLoop() {
 			polledData, err := orchestrator.poller.Poll()
 			if err != nil {
 				log.Println("error polling: ", err)
-				continue
 			}
 
 			// Filter
