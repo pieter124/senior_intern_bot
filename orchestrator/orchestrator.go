@@ -42,14 +42,14 @@ func (orchestrator *Orchestrator) MainLoop() {
 			}
 
 			// Filter
-			filteredData, err := orchestrator.filter.Filter(polledData)
+			filteredPostingsByVerdict, err := orchestrator.filter.Filter(polledData)
 			if err != nil {
 				log.Println("error filtering: ", err)
 			}
 
 			// Sender
-			err = orchestrator.sender.Send(filteredData)
-			if err != nil {
+			_, errors := orchestrator.sender.Send(filteredPostingsByVerdict)
+			if errors != nil {
 				log.Println("error sending: ", err)
 			}
 			// Storer (to implement)

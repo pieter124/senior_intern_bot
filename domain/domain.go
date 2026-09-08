@@ -35,6 +35,6 @@ type Posting struct {
 	Content     string   `json:"content"`
 	Company     string   `json:"-"` // Set during polling.
 	RawJSON     string   `json:"-"` // Set during polling.
-	ContentHash string   `json:"-"` // Set during filtering.
 	Verdict     Verdict  `json:"-"` // Set during filtering.
+	ContentHash string   `json:"-"` // Set during storing.
 }

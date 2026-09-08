@@ -35,8 +35,17 @@ func main() {
 	}
 
 	// Start bot session
-	botSession := bot.New(cfg)
-	botSession.Open()
+	botSession, err := bot.New(cfg)
+	if err != nil {
+		log.Println("error creating new bot session: ", err)
+		return
+	}
+
+	err = botSession.Open()
+	if err != nil {
+		log.Println("error opening up bot session: ", err)
+		return
+	}
 	defer botSession.Close()
 
 	greenhouseCompanies := []string{"monzo", "anthropic", "stripe", "jetbrains", "cloudflare",
@@ -47,11 +56,11 @@ func main() {
 	// Start up pipeline services.
 	pollerServ := poller.New(greenhouseCompanies)
 	filterServ := filter.New()
-	senderServ := sender.New(&botSession)
+	senderServ := sender.New(botSession)
 	storerServ := storer.New()
 
 	// Start ticker (determines how often we poll)
-	ticker := time.NewTicker(1 * time.Minute)
+	ticker := time.NewTicker(20 * time.Minute)
 
 	orchestratorServ, err := orchestrator.New(
 		pollerServ,

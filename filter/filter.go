@@ -5,7 +5,7 @@ import (
 )
 
 type Filterer interface {
-	Filter([]domain.Posting) ([]domain.Posting, error)
+	Filter([]domain.Posting) (map[domain.Verdict][]domain.Posting, error)
 }
 
 type KeywordFilter struct {
@@ -16,7 +16,8 @@ func New() *KeywordFilter {
 }
 
 // TODO
-func (filter *KeywordFilter) Filter(data []domain.Posting) ([]domain.Posting, error) {
-
-	return data, nil
+func (filter *KeywordFilter) Filter(data []domain.Posting) (map[domain.Verdict][]domain.Posting, error) {
+	postingsByVerdictMap := make(map[domain.Verdict][]domain.Posting)
+	postingsByVerdictMap[domain.REVIEW] = append(postingsByVerdictMap[domain.ACCEPT], data...)
+	return postingsByVerdictMap, nil
 }
