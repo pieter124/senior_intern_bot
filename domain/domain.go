@@ -10,6 +10,13 @@ const (
 	REJECT
 )
 
+type Source string
+
+const (
+	Greenhouse Source = "greenhouse"
+	Ashby      Source = "ashby"
+)
+
 var verdictNames = [...]string{
 	REVIEW: "REVIEW",
 	ACCEPT: "ACCEPT",
@@ -23,23 +30,14 @@ func (v Verdict) String() string {
 	return verdictNames[v]
 }
 
-type Location struct {
-	Name string `json:"name"`
-}
 type Posting struct {
-	Title     string   `json:"title"`
-	JobID     int      `json:"id"`
-	Location  Location `json:"location"`
-	PostedAt  string   `json:"first_published"`
-	UpdatedAt string   `json:"updated_at"`
-	URL       string   `json:"absolute_url"`
-	Company   string   `json:"-"` // Set during polling.
-	Verdict   Verdict  `json:"-"` // Set during filtering.
-}
-
-type AshbyPosting struct {
-	Title    string `json:"title"`
-	JobID    string `json:"id"`
-	Location string `json:"location"`
-	PostedAt string `json:"publishedAt"`
+	Source    string
+	Title     string
+	JobID     string
+	Location  string
+	PostedAt  string
+	UpdatedAt string
+	URL       string
+	Company   string
+	Verdict   Verdict
 }

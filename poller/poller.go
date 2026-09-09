@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	domain "senior_intern_bot/domain"
 	"time"
@@ -64,47 +63,48 @@ func (poller *BoardPoller) Poll() ([]domain.Posting, error) {
 	return polled, errors.Join(errs...)
 }
 
-func (poller *BoardPoller) pollBoard(company string) ([]domain.Posting, error) {
-	resp, err := poller.client.Get(getAshbyURL(company))
+func (poller *BoardPoller) fetch(url string, into any) error {
+	resp, err := poller.client.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("error making get request: %w", err)
+		return fmt.Errorf("get: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("bad status: %s", resp.Status)
+		return fmt.Errorf("bad status: %s", resp.Status)
 	}
-
+	if err := json.NewDecoder(resp.Body).Decode(into); err != nil {
+		return fmt.Errorf("decode: %w", err)
+	}
+	return nil
 }
 
-func (poller *BoardPoller) pollGreenhouse(company string) ([]domain.Posting, error) {
-	resp, err := poller.client.Get(getGreenhouseURL(company))
-	if err != nil {
-		return nil, fmt.Errorf("error making get request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("bad status: %s", resp.Status)
-	}
-
+func (poller *BoardPoller) pollAshby(company string) ([]domain.Posting, error) {
 	var body struct {
-		Jobs []json.RawMessage `json:"jobs"`
+		Jobs []ashbyJob `json:"jobs"`
 	}
-	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
-		return nil, fmt.Errorf("decode: %w", err)
+	if err := poller.fetch(getAshbyURL(company), &body); err != nil {
+		return nil, err
 	}
 
 	postings := make([]domain.Posting, 0, len(body.Jobs))
-	for _, raw := range body.Jobs {
-		var p domain.Posting
-		if err := json.Unmarshal(raw, &p); err != nil {
-			log.Println("error unmarshalling json into posting ", err)
-			continue
-		}
-		p.Company = company
-		p.RawJSON = string(raw)
-		postings = append(postings, p)
+	for _, j := range body.Jobs {
+		postings = append(postings, j.toPosting(company))
+	}
+	return postings, nil
+}
+
+func (poller *BoardPoller) pollGreenhouse(company string) ([]domain.Posting, error) {
+	var body struct {
+		Jobs []greenhouseJob `json:"jobs"`
+	}
+	if err := poller.fetch(getGreenhouseURL(company), &body); err != nil {
+		return nil, err
+	}
+
+	postings := make([]domain.Posting, 0, len(body.Jobs))
+	for _, j := range body.Jobs {
+		postings = append(postings, j.toPosting(company))
 	}
 	return postings, nil
 }

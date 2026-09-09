@@ -38,7 +38,7 @@ func New() *KeywordFilter {
 
 func (filter *KeywordFilter) Classify(posting domain.Posting) domain.Verdict {
 	title := normalise(posting.Title)
-	location := normalise(posting.Location.Name)
+	location := normalise(posting.Location)
 
 	role := filter.role.evaluate(title)
 	region := filter.region.evaluate(location)
