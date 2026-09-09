@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	bot "senior_intern_bot/bot"
 	config "senior_intern_bot/config"
+	deduper "senior_intern_bot/deduper"
 	filter "senior_intern_bot/filter"
 	orchestrator "senior_intern_bot/orchestrator"
 	poller "senior_intern_bot/poller"
@@ -56,6 +57,7 @@ func main() {
 
 	// Start up pipeline services.
 	pollerServ := poller.New()
+	deduperServ := deduper.New()
 	filterServ := filter.New()
 	senderServ := sender.New(botSession)
 	storerServ := storer.New()
@@ -65,6 +67,7 @@ func main() {
 
 	orchestratorServ, err := orchestrator.New(
 		pollerServ,
+		deduperServ,
 		filterServ,
 		senderServ,
 		storerServ,

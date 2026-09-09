@@ -12,7 +12,7 @@ var GreenhouseCompanies = []string{
 	"thetradedesk", "gsacapital", "netcraft", "riverlane", "mangroup",
 	"helsing", "roku", "dvtrading", "quadraturecapital", "aquaticcapitalmanagement",
 	"wehrtyou", "virtu", "xantium", "optiverus", "xtxmarketstechnologies", "mako",
-	"towerresearchcapital", "dojo", "hubspotjobs",
+	"towerresearchcapital", "dojo", "hubspotjobs", "glencoreuk", "schonfeld",
 }
 
 var AshbyCompanies = []string{

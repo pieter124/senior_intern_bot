@@ -2,6 +2,7 @@ package orchestrator
 
 import (
 	"log"
+	deduper "senior_intern_bot/deduper"
 	filter "senior_intern_bot/filter"
 	poller "senior_intern_bot/poller"
 	sender "senior_intern_bot/sender"
@@ -11,6 +12,7 @@ import (
 
 type Orchestrator struct {
 	poller        poller.Poller
+	deduper       deduper.Deduper
 	filter        filter.Filterer
 	sender        sender.Sender
 	storer        storer.Storer
@@ -18,9 +20,10 @@ type Orchestrator struct {
 	isDoneChannel chan bool
 }
 
-func New(poller poller.Poller, filter filter.Filterer, sender sender.Sender, storer storer.Storer, ticker *time.Ticker) (Orchestrator, error) {
+func New(poller poller.Poller, deduper deduper.Deduper, filter filter.Filterer, sender sender.Sender, storer storer.Storer, ticker *time.Ticker) (Orchestrator, error) {
 	return Orchestrator{
 		poller:        poller,
+		deduper:       deduper,
 		filter:        filter,
 		sender:        sender,
 		storer:        storer,
@@ -41,19 +44,29 @@ func (orchestrator *Orchestrator) MainLoop() {
 				log.Println("error polling: ", err)
 			}
 
+			// Dedupe
+			dedupedPostings, err := orchestrator.deduper.Dedupe(polledPostings)
+			if err != nil {
+				log.Println("error deduping: ", err)
+			}
+
 			// Filter
-			filteredPostingsByVerdict, err := orchestrator.filter.Filter(polledPostings)
+			filteredPostingsByVerdict, err := orchestrator.filter.Filter(dedupedPostings)
 			if err != nil {
 				log.Println("error filtering: ", err)
 			}
 
 			// Sender
-			_, errors := orchestrator.sender.Send(filteredPostingsByVerdict)
-			if errors != nil {
+			sentPostings, err := orchestrator.sender.Send(filteredPostingsByVerdict)
+			if err != nil {
 				log.Println("error sending: ", err)
 			}
-			// Storer (to implement)
 
+			// Storer (to implement)
+			err = orchestrator.storer.Store(sentPostings)
+			if err != nil {
+				log.Println("error storing: ", err)
+			}
 		}
 	}
 }
