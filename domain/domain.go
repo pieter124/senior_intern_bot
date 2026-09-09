@@ -34,6 +34,12 @@ type Posting struct {
 	UpdatedAt string   `json:"updated_at"`
 	URL       string   `json:"absolute_url"`
 	Company   string   `json:"-"` // Set during polling.
-	RawJSON   string   `json:"-"` // Set during polling.
 	Verdict   Verdict  `json:"-"` // Set during filtering.
+}
+
+type AshbyPosting struct {
+	Title    string `json:"title"`
+	JobID    string `json:"id"`
+	Location string `json:"location"`
+	PostedAt string `json:"publishedAt"`
 }

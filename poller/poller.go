@@ -24,6 +24,10 @@ func getGreenhouseURL(company string) string {
 	return fmt.Sprintf("https://boards-api.greenhouse.io/v1/boards/%s/jobs?content=true", company)
 }
 
+func getAshbyURL(company string) string {
+	return fmt.Sprintf("https://api.ashbyhq.com/posting-api/job-board/%s", company)
+}
+
 func New() *BoardPoller {
 	return &BoardPoller{
 		greenhouseCompanies: GreenhouseCompanies,
@@ -48,9 +52,29 @@ func (poller *BoardPoller) Poll() ([]domain.Posting, error) {
 		polled = append(polled, postings...)
 	}
 
-	//for _, company := range
+	// Poll ashby companies
+	for _, company := range poller.ashbyCompanies {
+		postings, err := poller.pollAshby(company)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("ashby %s: %w", company, err))
+		}
+		polled = append(polled, postings...)
+	}
 
 	return polled, errors.Join(errs...)
+}
+
+func (poller *BoardPoller) pollBoard(company string) ([]domain.Posting, error) {
+	resp, err := poller.client.Get(getAshbyURL(company))
+	if err != nil {
+		return nil, fmt.Errorf("error making get request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("bad status: %s", resp.Status)
+	}
+
 }
 
 func (poller *BoardPoller) pollGreenhouse(company string) ([]domain.Posting, error) {
