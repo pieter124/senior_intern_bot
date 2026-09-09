@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"os"
 	"os/signal"
@@ -14,8 +15,23 @@ import (
 	storer "senior_intern_bot/storer"
 	"time"
 
+	_ "modernc.org/sqlite"
+
 	"github.com/joho/godotenv"
 )
+
+const CREATE_TABLE_QUERY = `CREATE TABLE IF NOT EXISTS postings(
+						source TEXT NOT NULL,
+						company TEXT NOT NULL,
+						job_id TEXT NOT NULL,
+						title TEXT NOT NULL,
+						url TEXT NOT NULL,
+						location TEXT NOT NULL,
+						verdict INTEGER NOT NULL,
+						posted_at TEXT,
+						updated_at TEXT,
+						PRIMARY KEY (source, company, job_id)
+						);`
 
 func main() {
 	_ = godotenv.Load()
@@ -35,10 +51,16 @@ func main() {
 		log.Fatal("DISCORD_CHANNEL_UNSORTED environment variable is not set")
 	}
 
+	databaseDSN := os.Getenv("SQLITE_DB_PATH")
+	if databaseDSN == "" {
+		log.Fatal("SQLITE_DB_PATH environment variable is not set")
+	}
+
 	cfg := config.Config{
 		BotToken:            botToken,
 		InternshipChannelID: internshipChannelID,
 		UnsortedChannelID:   unsortedChannelID,
+		DatabaseDSN:         databaseDSN,
 	}
 
 	// Start bot session
@@ -47,7 +69,6 @@ func main() {
 		log.Println("error creating new bot session: ", err)
 		return
 	}
-
 	err = botSession.Open()
 	if err != nil {
 		log.Println("error opening up bot session: ", err)
@@ -55,12 +76,25 @@ func main() {
 	}
 	defer botSession.Close()
 
+	// Setup db
+	db, err := sql.Open("sqlite", cfg.DatabaseDSN)
+	if err != nil {
+		log.Println("error starting up db connecton: ", err)
+		return
+	}
+	defer db.Close()
+	_, err = db.Exec(CREATE_TABLE_QUERY)
+	if err != nil {
+		log.Println("error creating postings table: ", err)
+		return
+	}
+
 	// Start up pipeline services.
 	pollerServ := poller.New()
-	deduperServ := deduper.New()
+	deduperServ := deduper.New(db)
 	filterServ := filter.New()
 	senderServ := sender.New(botSession)
-	storerServ := storer.New()
+	storerServ := storer.New(db)
 
 	// Start ticker (determines how often we poll)
 	ticker := time.NewTicker(1 * time.Minute)

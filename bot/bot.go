@@ -28,7 +28,7 @@ func New(cfg config.Config) (*SessionHandler, error) {
 	// Create a session
 	discordSession, err := discordgo.New("Bot " + cfg.BotToken)
 	if err != nil {
-		log.Println("Error message: ", err)
+		log.Println("error creating session: ", err)
 		return nil, err
 	}
 
@@ -40,13 +40,13 @@ func New(cfg config.Config) (*SessionHandler, error) {
 
 func (sh *SessionHandler) Open() error {
 	if err := sh.session.Open(); err != nil {
-		log.Println("Error starting session: ", err)
+		log.Println("error starting session: ", err)
 		return err
 	}
 
 	// TO-BE-REMOVED
 	if _, err := sh.session.ChannelMessageSend(sh.InternshipChannelID, "Bot running..."); err != nil {
-		log.Println("Error sending startup message: ", err)
+		log.Println("error sending startup message: ", err)
 		return err
 	}
 	return nil
@@ -54,7 +54,7 @@ func (sh *SessionHandler) Open() error {
 
 func (sh *SessionHandler) Close() error {
 	if err := sh.session.Close(); err != nil {
-		log.Println("Error closing session: ", err)
+		log.Println("error closing session: ", err)
 		return err
 	}
 	return nil

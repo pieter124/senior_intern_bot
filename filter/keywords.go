@@ -138,5 +138,10 @@ var DisciplineAxis = axis{
 		"graphic design", "interior design", "fashion",
 		"nursing", "clinical", "physician", "veterinary",
 		"teaching", "tutor", "barista", "retail",
+
+		"cto", "grm", "community", "fraud", "it",
+		"public", "policy", "growth", "content", "creative", "sales",
+		"audiobook", "people", "client", "partnerships", "partner", "chief", "risk",
+		"business", "economic",
 	},
 }

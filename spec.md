@@ -193,8 +193,9 @@ Table `postings`, keyed on `(source, company, job_id)`:
 |---|---|
 | `source`, `company`, `job_id` | identity |
 | `title`, `location` | the fields classification is based on |
+| `url` | the link included in the Discord message; not read for classification, kept for possible future audit/history features |
 | `posted_at` | the source's own posting timestamp |
-| `updated_at` | the source's own last-modified timestamp; drives §7 |
+| `updated_at` | the source's own last-modified timestamp; intended to drive reclassification, see §7.1 |
 | `verdict` | `ACCEPT` / `REVIEW` / `REJECT` |
 
 ### 6.1 Driver
@@ -206,25 +207,47 @@ not link against.
 The database file must be mounted on a volume. An ephemeral database in a
 container gives none of the restart safety this section exists to provide.
 
-## 7. Reclassification rules
+## 7. Reclassification rules (v1)
 
 - Not yet in the table → classify.
-- `REJECT` is a one-way door: never reconsidered, even if the posting is edited
-  later. An employer whose posting carried an explicit out-of-scope signal is
-  responsible for correcting it; the bot doesn't re-check.
-- `ACCEPT` is also terminal: it has already been delivered, so a later edit
+- Already in the table → skip. `Dedupe` does a plain existence check on
+  `(source, company, job_id)`; no verdict currently reaches `Filter` or
+  `Sender` twice.
+
+`REJECT` postings are never written to the table (§8.2), so a `REJECT`ed
+posting is reclassified from scratch on every poll rather than being
+permanently excluded. That's redundant work, not a correctness problem — the
+same out-of-scope signal is still present, so the outcome doesn't change.
+
+### 7.1 Deferred: one-way `REJECT`, reclassifiable `REVIEW`
+
+The intended long-term behavior is stricter than v1's plain existence check:
+
+- `REJECT` as a one-way door: persisted immediately at classification time,
+  independent of `Send` (since `REJECT` postings are never sent), so it is
+  never reconsidered even if the posting is edited later. An employer whose
+  posting carried an explicit out-of-scope signal would be responsible for
+  correcting it; the bot wouldn't re-check.
+- `REVIEW` as the only verdict that gets re-evaluated: if `updated_at` moves on
+  a later poll, the posting is reclassified from scratch. This is how a
+  posting that was ambiguous (missing signal) gets a second chance once the
+  employer adds the missing information.
+- `ACCEPT` stays terminal either way — already delivered, so a later edit
   changes nothing actionable.
-- `REVIEW` is the only verdict that gets re-evaluated. If `updated_at` moves on
-  a later poll, the posting is reclassified from scratch. This is how a posting
-  that was ambiguous (missing signal) gets a second chance once the employer
-  adds the missing information.
 
 `updated_at` is the source's timestamp, not ours. It can bump for edits that
 don't affect classification, and in principle could fail to bump on an edit
-that does. The first costs one unnecessary reclassification; the second costs a
-missed second chance on a posting already sitting in `#unsorted` where a human
-can see it. Both are cheap relative to the alternative, which was fetching
-every description on every cycle (§5.2).
+that does. The first costs one unnecessary reclassification; the second costs
+a missed second chance on a posting already sitting in `#unsorted` where a
+human can see it. Both would be cheap relative to the alternative, which was
+fetching every description on every cycle (§5.2).
+
+**Not implemented in v1.** Shipping the simpler existence-check `Dedupe` and
+deferring this was a deliberate choice to get a working pipeline out first
+rather than block on it. Building it later needs two things: a second
+`Storer.Store` call site right after `Filter` (to persist `REJECT`s
+immediately, since they never reach `Send`), and an `updated_at` comparison
+inside `Dedupe`'s query for postings previously verdicted `REVIEW`.
 
 ## 8. Delivery and write ordering
 
@@ -252,29 +275,32 @@ batcher has to handle after the fact.
 
 ### 8.2 Write ordering
 
-A posting's row is written to SQLite only **after** its message has sent
-successfully, committed per message rather than per cycle. If a send fails, the
-affected postings are simply absent from the table and are naturally retried
-(reclassified and resent) on the next poll. The absence of a row *is* the retry
-signal; no separate failure tracking exists.
+`Storer.Store` is called once per poll cycle, after `Send`, with exactly the
+postings that were actually delivered — `ACCEPT` and `REVIEW` postings from
+batches that sent successfully (§8.1). If a send fails, the affected postings
+are simply absent from that call and are naturally retried (reclassified and
+resent) on the next poll. The absence of a row *is* the retry signal; no
+separate failure tracking exists.
 
-`REJECT` postings have no send step, so they're persisted immediately on
-classification. Persisting them is what makes §7's one-way door enforceable:
-without the row, a rejected posting looks unseen on the next poll and gets
-reclassified.
+`REJECT` postings have no send step and are never passed to `Store` at all in
+v1 — see §7.1 for why that's a deferred gap rather than a design choice.
 
-The unit of knowledge is the batch, not the posting: Discord accepts or rejects
-a whole message, so all postings in a batch persist or none do.
+All postings in one `Store` call are written in a single transaction, using
+`INSERT OR IGNORE`. `Dedupe` already filters out anything previously seen, so
+a primary-key collision reaching `Store` should be rare — a race, a bug, a
+manual re-run — and `OR IGNORE` keeps that edge case from failing the whole
+write rather than being the expected path. One consequence worth naming: this
+commits per poll cycle, not per Discord message, so a hard write failure
+partway through rolls back postings from multiple already-successfully-sent
+batches together, not just the one that triggered it — those postings would
+be resent next poll even though Discord already delivered them once.
 
-Reversing the order would be worse. Persist-then-send leaves a row marking a
-posting "seen" that nobody ever received, making it permanently invisible. That
-is the silent drop §1 forbids, and it is unrecoverable without manual
-intervention. The current ordering cannot produce that state.
-
-The cost is a possible duplicate post if a crash lands in the narrow window
-after a successful send but before the commit. Given §1's stated priority, an
-occasional duplicate is an acceptable trade for never silently losing a
-posting.
+Reversing send/persist order entirely would be worse regardless of commit
+granularity. Persist-then-send leaves a row marking a posting "seen" that
+nobody ever received, making it permanently invisible — the silent drop §1
+forbids, and unrecoverable without manual intervention. Persist-after-send
+cannot produce that state; the cost is a possible duplicate post instead of a
+possible silent loss, which is the accepted trade per §1.
 
 ## 9. Decision log
 
@@ -290,3 +316,8 @@ posting.
 | 2026-09 | Identity is `(source, company, job_id)`, `job_id` a string | IDs are unique per source, not globally; Lever uses UUIDs |
 | 2026-09 | Batching operates on postings, not strings | §8.2 requires attributing a successful send back to specific postings |
 | 2026-09 | Added Ashby as a second source | 19 of 27 checked companies not on Greenhouse were reachable on Ashby, including Deliveroo, Trainline, and Thought Machine |
+| 2026-09 | Added a separate Dedupe service | Primarily to prevent duplicate messaging on jobs and helps to reduce load on filtering service. |
+| 2026-09 | `Dedupe` runs right after `Poll`, sharing `Storer`'s DB connection | Skips wasted `Filter`/`Send` work on postings already seen; `Storer` stays sole writer, `Dedupe` sole reader, avoiding two independent DB owners |
+| 2026-09 | `postings` table gains a `url` column beyond §6's original list | Cheap to store, kept for possible future audit/history features even though it's not read for classification |
+| 2026-09 | Deferred `REJECT`-as-one-way-door and `REVIEW` reclassification (§7.1) | v1 ships a simpler existence-check `Dedupe` to get a working pipeline out first; the fuller behavior is documented, not dropped |
+| 2026-09 | `Storer.Store` commits one transaction per call, `INSERT OR IGNORE` on conflict | `Dedupe` already filters upstream, so a collision reaching `Store` is a rare edge case, not the normal path — no need for per-posting atomicity, and `IGNORE` keeps that edge case from crashing the batch |
