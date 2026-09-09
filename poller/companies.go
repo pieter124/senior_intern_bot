@@ -7,5 +7,18 @@ var GreenhouseCompanies = []string{
 	"elastic", "gitlab", "grafanalabs", "cockroachlabs", "vercel",
 	"twilio", "coinbase", "reddit", "discord", "figma",
 	"asana", "duolingo", "pinterest", "lyft", "instacart",
-	"scaleai", "form3", "tide",
+	"scaleai", "form3", "tide", "quberesearchandtechnologies",
+	"jumptrading", "janestreet", "imc", "apadmi", "goodnotes",
+	"thetradedesk", "gsacapital", "netcraft", "riverlane", "mangroup",
+	"helsing", "roku", "dvtrading", "quadraturecapital", "aquaticcapitalmanagement",
+	"wehrtyou", "virtu", "xantium", "optiverus", "xtxmarketstechnologies", "mako",
+	"towerresearchcapital", "dojo", "hubspotjobs",
+}
+
+var AshbyCompanies = []string{
+	"incident", "linear", "ramp", "vanta", "openai",
+	"notion", "posthog", "replit", "supabase", "clickhouse",
+	"modal", "hex", "runway", "deliveroo", "trainline",
+	"primer", "synthesia", "elevenlabs", "wayve", "cohere", "perplexity",
+	"strava", "runna", "thought-machine",
 }
