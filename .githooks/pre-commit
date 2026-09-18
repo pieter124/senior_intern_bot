@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Blocks the commit if staged Go files fail golangci-lint.
+# Enable with: git config core.hooksPath .githooks
+set -euo pipefail
+
+staged_go_files=$(git diff --cached --name-only --diff-filter=ACM -- '*.go')
+if [ -z "$staged_go_files" ]; then
+	exit 0
+fi
+
+if ! command -v golangci-lint >/dev/null 2>&1; then
+	echo "pre-commit: golangci-lint not found in PATH." >&2
+	echo "Install it: https://golangci-lint.run/welcome/install/" >&2
+	exit 1
+fi
+
+echo "pre-commit: running golangci-lint..."
+if ! golangci-lint run ./...; then
+	echo "pre-commit: lint failed, commit aborted." >&2
+	exit 1
+fi

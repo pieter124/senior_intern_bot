@@ -2,6 +2,7 @@ package storer
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 	"senior_intern_bot/domain"
 )
@@ -28,7 +29,7 @@ func (storer *SQLiteStorer) Store(postings []domain.Posting) error {
 		log.Println("error beginning db transaction: ", err)
 		return err
 	}
-	var query string = `INSERT OR IGNORE INTO postings
+	query := `INSERT OR IGNORE INTO postings
 (source, company, job_id, title, url, location, verdict, posted_at, updated_at)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
 	for _, p := range postings {
@@ -36,7 +37,10 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
 			p.JobID, p.Title, p.URL, p.Location, int(p.Verdict), p.PostedAt, p.UpdatedAt)
 		if err != nil {
 			log.Printf("error trying to store posting: %s|%s|%s\n", p.Source, p.Company, p.JobID)
-			tx.Rollback()
+			rb_err := tx.Rollback()
+			if rb_err != nil {
+				return errors.Join(rb_err, err)
+			}
 			return err
 		}
 	}

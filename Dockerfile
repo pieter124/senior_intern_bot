@@ -5,7 +5,7 @@ COPY go.mod go.sum ./
 RUN go mod download 
 
 COPY . .
-RUN go build -o /bin/bot .
+RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/bot .
 
 
 FROM gcr.io/distroless/static-debian12

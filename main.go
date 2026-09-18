@@ -74,7 +74,7 @@ func main() {
 		log.Println("error opening up bot session: ", err)
 		return
 	}
-	defer botSession.Close()
+	defer func() { _ = botSession.Close() }()
 
 	// Setup db
 	db, err := sql.Open("sqlite", cfg.DatabaseDSN)
@@ -82,7 +82,7 @@ func main() {
 		log.Println("error starting up db connecton: ", err)
 		return
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 	_, err = db.Exec(CREATE_TABLE_QUERY)
 	if err != nil {
 		log.Println("error creating postings table: ", err)
@@ -97,7 +97,7 @@ func main() {
 	storerServ := storer.New(db)
 
 	// Start ticker (determines how often we poll)
-	ticker := time.NewTicker(1 * time.Minute)
+	ticker := time.NewTicker(20 * time.Minute)
 
 	orchestratorServ, err := orchestrator.New(
 		pollerServ,

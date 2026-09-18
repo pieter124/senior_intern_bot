@@ -43,12 +43,6 @@ func (sh *SessionHandler) Open() error {
 		log.Println("error starting session: ", err)
 		return err
 	}
-
-	// TO-BE-REMOVED
-	if _, err := sh.session.ChannelMessageSend(sh.InternshipChannelID, "Bot running..."); err != nil {
-		log.Println("error sending startup message: ", err)
-		return err
-	}
 	return nil
 }
 

@@ -13,6 +13,7 @@ var GreenhouseCompanies = []string{
 	"helsing", "roku", "dvtrading", "quadraturecapital", "aquaticcapitalmanagement",
 	"wehrtyou", "virtu", "xantium", "optiverus", "xtxmarketstechnologies", "mako",
 	"towerresearchcapital", "dojo", "hubspotjobs", "glencoreuk", "schonfeld",
+	"andurilindustries",
 }
 
 var AshbyCompanies = []string{
@@ -20,5 +21,5 @@ var AshbyCompanies = []string{
 	"notion", "posthog", "replit", "supabase", "clickhouse",
 	"modal", "hex", "runway", "deliveroo", "trainline",
 	"primer", "synthesia", "elevenlabs", "wayve", "cohere", "perplexity",
-	"strava", "runna", "thought-machine",
+	"strava", "runna", "thought-machine", "talos-trading",
 }

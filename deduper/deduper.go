@@ -24,7 +24,7 @@ func New(dbConnection *sql.DB) *SQLiteDeduper {
 func (deduper *SQLiteDeduper) Dedupe(postings []domain.Posting) ([]domain.Posting, error) {
 	dedupedPostings := make([]domain.Posting, 0, len(postings))
 
-	var query string = `SELECT 1 FROM postings
+	query := `SELECT 1 FROM postings
 						WHERE source = ?
 						AND company = ?
 						AND job_id = ?
