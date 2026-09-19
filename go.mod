@@ -5,6 +5,7 @@ go 1.26.4
 require (
 	github.com/bwmarrin/discordgo v0.29.0
 	github.com/joho/godotenv v1.5.1
+	modernc.org/sqlite v1.58.0
 )
 
 require (
@@ -19,5 +20,4 @@ require (
 	modernc.org/libc v1.75.6 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.12.1 // indirect
-	modernc.org/sqlite v1.58.0 // indirect
 )
