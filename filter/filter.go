@@ -17,22 +17,31 @@ const (
 	no
 )
 
-type axis struct {
-	inScope    []string
-	outOfScope []string
-}
-type KeywordFilter struct {
-	role       axis
-	region     axis
-	discipline axis
+// Axis is one dimension a posting is judged on, described by keyword phrases
+// that put it in scope or out of scope.
+type Axis struct {
+	InScope    []string
+	OutOfScope []string
 }
 
-func New() *KeywordFilter {
+type KeywordFilter struct {
+	role       Axis
+	region     Axis
+	discipline Axis
+}
+
+// New builds a KeywordFilter from the given axes.
+func New(role, region, discipline Axis) *KeywordFilter {
 	return &KeywordFilter{
-		role:       RoleAxis,
-		region:     RegionAxis,
-		discipline: DisciplineAxis,
+		role:       role,
+		region:     region,
+		discipline: discipline,
 	}
+}
+
+// NewDefault builds a KeywordFilter from the keyword lists in keywords.go.
+func NewDefault() *KeywordFilter {
+	return New(RoleAxis, RegionAxis, DisciplineAxis)
 }
 
 func (filter *KeywordFilter) Classify(posting domain.Posting) domain.Verdict {
@@ -59,9 +68,9 @@ func (filter *KeywordFilter) Filter(postings []domain.Posting) (map[domain.Verdi
 	return postingsByVerdict, nil
 }
 
-func (a *axis) evaluate(text string) signal {
-	hitInScope := util.ContainsAny(text, a.inScope)
-	hitOutOfScope := util.ContainsAny(text, a.outOfScope)
+func (a *Axis) evaluate(text string) signal {
+	hitInScope := util.ContainsAny(text, a.InScope)
+	hitOutOfScope := util.ContainsAny(text, a.OutOfScope)
 
 	switch {
 	case hitInScope && !hitOutOfScope:

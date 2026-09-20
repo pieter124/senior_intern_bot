@@ -13,7 +13,7 @@ func TestKeywordFilter_Classify(t *testing.T) {
 	}{
 		{
 			name:    "internship in EMEA region is accepted",
-			posting: domain.Posting{Title: "EMEA Technnology Internship", Location: "EMEA"},
+			posting: domain.Posting{Title: "EMEA Technology Internship", Location: "EMEA"},
 			want:    domain.ACCEPT,
 		},
 		{
@@ -43,7 +43,7 @@ func TestKeywordFilter_Classify(t *testing.T) {
 		},
 	}
 
-	filter := New()
+	filter := NewDefault()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := filter.Classify(tt.posting)
