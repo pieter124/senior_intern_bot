@@ -3,8 +3,8 @@ package filter
 // RoleAxis answers "is this an internship or student-level position?"
 // The out-of-scope list holds seniority markers only:
 // nothing about function or team.
-var RoleAxis = axis{
-	inScope: []string{
+var RoleAxis = Axis{
+	InScope: []string{
 		"intern", "interns", "internship", "internships",
 		"placement", "industrial placement", "placement year",
 		"summer analyst", "summer associate", "summer",
@@ -14,7 +14,7 @@ var RoleAxis = axis{
 		"student", "students", "undergraduate", "undergrad",
 		"early career", "early careers", "campus",
 	},
-	outOfScope: []string{
+	OutOfScope: []string{
 		"senior", "staff", "principal", "director",
 		"vp", "vice president", "chief", "executive",
 		"head of", "manager", "architect",
@@ -26,8 +26,8 @@ var RoleAxis = axis{
 // ("London, UK", "Remote", "Multiple Locations"). A location naming both an
 // EMEA and a non-EMEA site contradicts itself and evaluates to unknown,
 // which routes to REVIEW rather than dropping a role open in both.
-var RegionAxis = axis{
-	inScope: []string{
+var RegionAxis = Axis{
+	InScope: []string{
 		"emea", "europe", "european",
 
 		"uk", "united kingdom", "britain", "england", "scotland", "wales",
@@ -57,7 +57,7 @@ var RegionAxis = axis{
 		"warsaw", "warszawa", "krakow", "kraków", "wroclaw", "wrocław",
 		"poznan", "poznań", "gdansk", "gdańsk", "lodz", "łódź",
 	},
-	outOfScope: []string{
+	OutOfScope: []string{
 		"usa", "united states", "canada", "mexico", "brazil", "brasil",
 		"argentina", "chile", "colombia", "peru",
 		"india", "china", "japan", "korea", "singapore", "malaysia",
@@ -95,8 +95,8 @@ var RegionAxis = axis{
 // This axis is used as a veto rather than a requirement (see Classify):
 // an out-of-scope discipline rejects, but the absence of any discipline
 // signal does not block ACCEPT.
-var DisciplineAxis = axis{
-	inScope: []string{
+var DisciplineAxis = Axis{
+	InScope: []string{
 		"software", "software engineer",
 		"engineer", "engineering", "developer", "development",
 
@@ -117,7 +117,7 @@ var DisciplineAxis = axis{
 		"technology", "technical", "quantitative", "quant",
 		"test engineer", "automation", "product", "product engineer",
 	},
-	outOfScope: []string{
+	OutOfScope: []string{
 		"marketing", "content marketing", "brand", "advertising",
 		"public relations", "communications", "copywriter", "copywriting",
 		"social media", "journalism", "editorial",

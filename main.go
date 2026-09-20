@@ -92,7 +92,7 @@ func main() {
 	// Start up pipeline services.
 	pollerServ := poller.New()
 	deduperServ := deduper.New(db)
-	filterServ := filter.New()
+	filterServ := filter.NewDefault()
 	senderServ := sender.New(botSession)
 	storerServ := storer.New(db)
 
