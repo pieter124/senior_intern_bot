@@ -2,8 +2,7 @@ package filter
 
 import (
 	domain "senior_intern_bot/domain"
-	"strings"
-	"unicode"
+	util "senior_intern_bot/util"
 )
 
 type Filterer interface {
@@ -37,12 +36,9 @@ func New() *KeywordFilter {
 }
 
 func (filter *KeywordFilter) Classify(posting domain.Posting) domain.Verdict {
-	title := normalise(posting.Title)
-	location := normalise(posting.Location)
-
-	role := filter.role.evaluate(title)
-	region := filter.region.evaluate(location)
-	discipline := filter.discipline.evaluate(title)
+	role := filter.role.evaluate(posting.Title)
+	region := filter.region.evaluate(posting.Location)
+	discipline := filter.discipline.evaluate(posting.Title)
 
 	switch {
 	case role == no || region == no || discipline == no:
@@ -63,9 +59,9 @@ func (filter *KeywordFilter) Filter(postings []domain.Posting) (map[domain.Verdi
 	return postingsByVerdict, nil
 }
 
-func (a *axis) evaluate(normalised string) signal {
-	hitInScope := containsAny(normalised, a.inScope)
-	hitOutOfScope := containsAny(normalised, a.outOfScope)
+func (a *axis) evaluate(text string) signal {
+	hitInScope := util.ContainsAny(text, a.inScope)
+	hitOutOfScope := util.ContainsAny(text, a.outOfScope)
 
 	switch {
 	case hitInScope && !hitOutOfScope:
@@ -75,20 +71,4 @@ func (a *axis) evaluate(normalised string) signal {
 	default:
 		return unknown
 	}
-}
-
-func normalise(s string) string {
-	words := strings.FieldsFunc(strings.ToLower(s), func(r rune) bool {
-		return !unicode.IsLetter(r) && !unicode.IsNumber(r)
-	})
-	return " " + strings.Join(words, " ") + " "
-}
-
-func containsAny(s string, phrases []string) bool {
-	for _, p := range phrases {
-		if strings.Contains(s, " "+p+" ") {
-			return true
-		}
-	}
-	return false
 }

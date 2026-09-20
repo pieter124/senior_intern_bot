@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestKeywordFilterClassify(t *testing.T) {
+func TestKeywordFilter_Classify(t *testing.T) {
 	var tests = []struct {
 		name    string
 		posting domain.Posting
